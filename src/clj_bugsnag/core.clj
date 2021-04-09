@@ -9,11 +9,13 @@
             [clojure.string :as string]
             [clojure.walk :as walk]))
 
-(def git-rev
-  (delay
-    (try
-      (string/trim (:out (sh "git" "rev-parse" "HEAD")))
-      (catch Exception ex "git revision not available"))))
+(defn get-git-rev
+  []
+  (try
+    (string/trim (:out (sh "git" "rev-parse" "HEAD")))
+    (catch Exception ex "git revision not available")))
+
+(def git-rev (memoize get-git-rev))
 
 (defn- find-source-snippet
   [around, function-name]
@@ -80,7 +82,7 @@
                :user (:user options)
                :app {:version (if (contains? options :version)
                                 (:version options)
-                                @git-rev)
+                                (git-rev))
                      :releaseStage (or (:environment options) "production")}
                :device {:hostname (.. java.net.InetAddress getLocalHost getHostName)}
                :metaData (walk/postwalk stringify (merge base-meta (:meta options)))}]}))
