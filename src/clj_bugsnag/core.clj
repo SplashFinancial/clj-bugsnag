@@ -1,10 +1,9 @@
 (ns clj-bugsnag.core
-  (:require [clj-stacktrace.core :refer [parse-exception]]
+  (:require [clj-bugsnag.impl :as impl]
+            [clj-stacktrace.core :refer [parse-exception]]
             [clj-stacktrace.repl :refer [method-str]]
             [clojure.java.shell :refer [sh]]
             [clj-http.client :as http]
-            [environ.core :refer [env]]
-            [clojure.data.json :as json]
             [clojure.repl :as repl]
             [clojure.string :as string]
             [clojure.walk :as walk]))
@@ -13,12 +12,12 @@
   []
   (try
     (string/trim (:out (sh "git" "rev-parse" "HEAD")))
-    (catch Exception ex "git revision not available")))
+    (catch Throwable _t "git revision not available")))
 
 (def git-rev (memoize get-git-rev))
 
 (defn- find-source-snippet
-  [around, function-name]
+  [around function-name]
   (try
     (let [fn-sym (symbol function-name)
           fn-var (find-var fn-sym)
@@ -28,7 +27,7 @@
                                         [(+ i start), (string/trimr line)])
                                      (string/split-lines source))]
       (into {} (filter #(<= (- around 3) (first %) (+ around 3)) indexed-lines)))
-    (catch Exception ex
+    (catch Exception _ex
       nil)))
 
 (defn- transform-stacktrace
@@ -57,35 +56,36 @@
     (str thing)))
 
 (defn exception->json
-  [exception options]
-  (let [ex (parse-exception exception)
-        class-name (.getName (:class ex))
-        project-ns (get options :project-ns "\000")
-        stacktrace (transform-stacktrace (:trace-elems ex) project-ns)
-        base-meta (if-let [d (ex-data exception)]
-                    {"ex–data" d}
-                    {})]
-    {:apiKey (:api-key options (env :bugsnag-key))
-     :notifier {:name "clj-bugsnag"
-                :version "0.2.2"
-                :url "https://github.com/wunderlist/clj-bugsnag"}
-     :events [{:payloadVersion "2"
-               :exceptions [{:errorClass class-name
-                             :message (:message ex)
-                             :stacktrace stacktrace}]
-               :context (:context options)
-               :groupingHash (or (:group options)
-                               (if (isa? (type exception) clojure.lang.ExceptionInfo)
-                                 (:message ex)
-                                 class-name))
-               :severity (or (:severity options) "error")
-               :user (:user options)
-               :app {:version (if (contains? options :version)
-                                (:version options)
-                                (git-rev))
-                     :releaseStage (or (:environment options) "production")}
-               :device {:hostname (.. java.net.InetAddress getLocalHost getHostName)}
-               :metaData (walk/postwalk stringify (merge base-meta (:meta options)))}]}))
+  [exception {:keys [project-ns context group severity user version environment meta] :as options}]
+  (let [ex            (parse-exception exception)
+        message       (:message ex)
+        class-name    (.getName (:class ex))
+        project-ns    (or project-ns "\000")
+        stacktrace    (transform-stacktrace (:trace-elems ex) project-ns)
+        base-meta     (if-let [d (ex-data exception)]
+                        {"ex–data" d}
+                        {})
+        api-key       (impl/load-bugsnag-api-key! options)
+        grouping-hash (or group
+                          (if (isa? (type exception) clojure.lang.ExceptionInfo)
+                            message
+                            class-name))]
+    {:apiKey   api-key
+     :notifier {:name    "clj-bugsnag"
+                :version "0.2.9"
+                :url     "https://github.com/wunderlist/clj-bugsnag"}
+     :events   [{:payloadVersion "2"
+                 :exceptions     [{:errorClass class-name
+                                   :message    message
+                                   :stacktrace stacktrace}]
+                 :context        context
+                 :groupingHash   grouping-hash
+                 :severity       (or severity "error")
+                 :user           user
+                 :app            {:version      (or version (git-rev))
+                                  :releaseStage (or environment "production")}
+                 :device         {:hostname (.. java.net.InetAddress getLocalHost getHostName)}
+                 :metaData       (walk/postwalk stringify (merge base-meta meta))}]}))
 
 (defn notify
   "Main interface for manually reporting exceptions.
@@ -93,7 +93,8 @@
    tries to load BUGSNAG_KEY var from enviroment."
   ([exception]
     (notify exception nil))
-  ([exception, options]
+
+  ([exception options]
     (let [params (exception->json exception options)
           url "https://notify.bugsnag.com/"]
       (http/post url {:form-params params
