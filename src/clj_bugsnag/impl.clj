@@ -1,14 +1,13 @@
 (ns clj-bugsnag.impl)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;; Wrappers - here to support testing with-redefs since
-;;;;            we can't redef static methods
+(defn getenv
+  "Wrapper - here to support testing since we can't redef static methods"
+  [k]
+  (System/getenv k))
 
-(defn- getenv
-  ([] (System/getenv))
-  ([k] (System/getenv k)))
-
-(defn- getProperty [k]
+(defn getProperty
+  "Wrapper - here to support testing since we can't redef static methods"
+  [k]
   (System/getProperty k))
 
 (defn load-bugsnag-api-key!
