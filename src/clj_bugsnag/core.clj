@@ -23,8 +23,8 @@
           fn-var (find-var fn-sym)
           source (repl/source-fn fn-sym)
           start (-> fn-var meta :line)
-          indexed-lines (map-indexed (fn [i, line]
-                                        [(+ i start), (string/trimr line)])
+          indexed-lines (map-indexed (fn [i line]
+                                        [(+ i start) (string/trimr line)])
                                      (string/split-lines source))]
       (into {} (filter #(<= (- around 3) (first %) (+ around 3)) indexed-lines)))
     (catch Exception _ex
@@ -38,14 +38,14 @@
                      method (method-str elem)
                      code (when (.endsWith (or file "") ".clj")
                             (find-source-snippet line (.replace (or method "") "[fn]" "")))]]
-            {:file file,
-             :lineNumber line,
-             :method method,
-             :inProject project?,
+            {:file file
+             :lineNumber line
+             :method method
+             :inProject project?
              :code code}))
     (catch Exception ex
-      [{:file "clj-bugsnag/core.clj",
-        :lineNumber 1,
+      [{:file "clj-bugsnag/core.clj"
+        :lineNumber 1
         :code {1 (str ex)
                2 "thrown while building stack trace."}}])))
 
