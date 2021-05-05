@@ -1,7 +1,25 @@
-/target
-/classes
-/checkouts
-*.jar
+## Clojure Artifacts
+.nrepl-port
 *.class
+*.jar
+.hg/
+/.cpcache
 /.lein-*
-/.nrepl-port
+/.nrepl-history
+/checkouts
+/classes
+/target
+
+## Maven Artifacts
+pom.xml.versionsBackup
+META-INF/
+
+## Editor-Specific Files
+*.swp
+*.swo
+**/.calva
+**/.cpcache
+*.DS_Store
+*.calva
+*.cpcache
+*.lsp

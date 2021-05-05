@@ -1,0 +1,20 @@
+name: Clojure Dependency Update
+
+on:
+  schedule:
+    - cron: '0 15 * * *'
+
+jobs:
+  dependency-update:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Latest Commit
+      uses: actions/checkout@v1
+
+    - name: Check deps
+      uses: nnichols/leiningen-dependency-update-action@v1
+      with:
+        github-token: ${{ secrets.github_token }}
+        skips: "pom"
