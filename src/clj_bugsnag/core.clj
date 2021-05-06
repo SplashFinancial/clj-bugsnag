@@ -71,9 +71,9 @@
                             message
                             class-name))]
     {:apiKey   api-key
-     :notifier {:name    "clj-bugsnag"
-                :version "0.2.9"
-                :url     "https://github.com/wunderlist/clj-bugsnag"}
+     :notifier {:name    "com.splashfinancial/clj-bugsnag"
+                :version "1.0.0"
+                :url     "https://github.com/SplashFinancial/clj-bugsnag"}
      :events   [{:payloadVersion "2"
                  :exceptions     [{:errorClass class-name
                                    :message    message
