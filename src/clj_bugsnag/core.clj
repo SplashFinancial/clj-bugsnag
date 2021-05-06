@@ -63,7 +63,7 @@
         project-ns    (or project-ns "\000")
         stacktrace    (transform-stacktrace (:trace-elems ex) project-ns)
         base-meta     (if-let [d (ex-data exception)]
-                        {"ex–data" d}
+                        {"ex-data" d}
                         {})
         api-key       (impl/load-bugsnag-api-key! options)
         grouping-hash (or group
