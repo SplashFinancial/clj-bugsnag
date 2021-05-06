@@ -16,6 +16,13 @@
 
 (def git-rev (memoize get-git-rev))
 
+(defn get-hostname
+  "Attempt to get the current hostname."
+  []
+  (try
+    (.. java.net.InetAddress getLocalHost getHostName)
+    (catch Throwable _t "Hostname could not be resolved")))
+
 (defn- find-source-snippet
   [around function-name]
   (try
@@ -84,7 +91,7 @@
                  :user           user
                  :app            {:version      (or version (git-rev))
                                   :releaseStage (or environment "production")}
-                 :device         {:hostname (.. java.net.InetAddress getLocalHost getHostName)}
+                 :device         {:hostname (get-hostname)}
                  :metaData       (walk/postwalk stringify (merge base-meta meta))}]}))
 
 (defn notify

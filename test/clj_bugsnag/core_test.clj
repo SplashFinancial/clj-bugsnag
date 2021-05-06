@@ -20,7 +20,7 @@
   (bond/with-stub! [[impl/load-bugsnag-api-key! (fn [_] "some-api-key")]]
     (t/testing "The resulting json map includes ExceptionInfo's ex-data"
       (let [json (core/exception->json (ex-info "BOOM" {:wat "?!"}) {:meta {:reason println}})]
-        (t/is (= "?!" (-> json :events first (get-in [:metaData "ex–data" ":wat"]))))
+        (t/is (= "?!" (-> json :events first (get-in [:metaData "ex-data" ":wat"]))))
         (t/is (= "BOOM" (-> json :events first :groupingHash)))
         (t/is (= "some-api-key" (:apiKey json)))
         (t/is (cs/starts-with? (-> json :events first (get-in [:metaData ":reason"])) "clojure.core$println@"))))
