@@ -71,4 +71,4 @@ Alternatively, you may clone or fork the repository to work with it directly.
 
 ## License
 
-Distributed under the [Eclipse Public License](http://www.eclipse.org/legal/epl-v10.html), the same as Clojure.
+Distributed under the [Eclipse Public License](http://www.eclipse.org/legal/epl-v10.html), the same as Clojure and the predecessor of this fork.
