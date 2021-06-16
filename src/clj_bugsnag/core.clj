@@ -16,6 +16,13 @@
 
 (def git-rev (memoize get-git-rev))
 
+(defn get-hostname
+  "Attempt to get the current hostname."
+  []
+  (try
+    (.. java.net.InetAddress getLocalHost getHostName)
+    (catch Throwable _t "Hostname could not be resolved")))
+
 (defn- find-source-snippet
   [around function-name]
   (try
@@ -34,10 +41,10 @@
   [trace-elems project-ns]
   (try
     (vec (for [{:keys [file line ns] :as elem} trace-elems
-               :let [project? (.startsWith (or ns "_") project-ns)
+               :let [project? (string/starts-with? (or ns "_") project-ns)
                      method (method-str elem)
-                     code (when (.endsWith (or file "") ".clj")
-                            (find-source-snippet line (.replace (or method "") "[fn]" "")))]]
+                     code (when (string/ends-with? (or file "") ".clj")
+                            (find-source-snippet line (string/replace (or method "") "[fn]" "")))]]
             {:file file
              :lineNumber line
              :method method
@@ -59,11 +66,11 @@
   [exception {:keys [project-ns context group severity user version environment meta] :as options}]
   (let [ex            (parse-exception exception)
         message       (:message ex)
-        class-name    (.getName (:class ex))
+        class-name    (.getName ^Class (:class ex))
         project-ns    (or project-ns "\000")
         stacktrace    (transform-stacktrace (:trace-elems ex) project-ns)
         base-meta     (if-let [d (ex-data exception)]
-                        {"ex–data" d}
+                        {"ex-data" d}
                         {})
         api-key       (impl/load-bugsnag-api-key! options)
         grouping-hash (or group
@@ -71,9 +78,9 @@
                             message
                             class-name))]
     {:apiKey   api-key
-     :notifier {:name    "clj-bugsnag"
-                :version "0.2.9"
-                :url     "https://github.com/wunderlist/clj-bugsnag"}
+     :notifier {:name    "com.splashfinancial/clj-bugsnag"
+                :version "1.0.0"
+                :url     "https://github.com/SplashFinancial/clj-bugsnag"}
      :events   [{:payloadVersion "2"
                  :exceptions     [{:errorClass class-name
                                    :message    message
@@ -84,7 +91,7 @@
                  :user           user
                  :app            {:version      (or version (git-rev))
                                   :releaseStage (or environment "production")}
-                 :device         {:hostname (.. java.net.InetAddress getLocalHost getHostName)}
+                 :device         {:hostname (get-hostname)}
                  :metaData       (walk/postwalk stringify (merge base-meta meta))}]}))
 
 (defn notify

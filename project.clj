@@ -1,6 +1,6 @@
-(defproject clj-bugsnag "0.2.9"
+(defproject com.splashfinancial/clj-bugsnag "1.0.0"
   :description "Fully fledged Bugsnag client. Supports ex-data and ring middleware."
-  :url "https://github.com/wunderlist/clj-bugsnag"
+  :url "https://github.com/SplashFinancial/clj-bugsnag"
   :license {:name "Eclipse Public License"
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
   :min-lein-version "2.3.0"

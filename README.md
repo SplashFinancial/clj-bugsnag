@@ -1,40 +1,30 @@
+# clj-bugsnag
 
-
-# clj-bugsnag [![Build Status](https://travis-ci.org/wunderlist/clj-bugsnag.svg)](https://travis-ci.org/wunderlist/clj-bugsnag)
+[![Clojars Project](https://img.shields.io/clojars/v/com.splashfinancial/clj-bugsnag.svg)](https://clojars.org/com.splashfinancial/clj-bugsnag)
+[![cljdoc badge](https://cljdoc.org/badge/com.splashfinancial/clj-bugsnag)](https://cljdoc.org/d/com.splashfinancial/clj-bugsnag/CURRENT)
+![GitHub Runner](https://github.com/Wall-Brew-Co/clj-bugsnag/workflows/Clojure%20CI/badge.svg)
 
 A fully fledged [Bugsnag](https://bugsnag.com) exception reporting client for Clojure.
 
+Originally forked from [MicrosoftArchive](https://github.com/microsoftarchive/clj-bugsnag)
 
 ## Features
 
- - Automatically exposes ex-info data as metadata
- - Ring middleware included, attaches ring request map as metadata
- - Include snippet of code around stack trace lines
- - Mark in-project stack traces to hide frameworks
- - Pass along user IDs to Bugsnag
- - Tested, used in production at [6 Wunderkinder](http://www.6wunderkinder.com/) for [Wunderlist](https://www.wunderlist.com/)
-
+- Automatically exposes ex-info data as metadata
+- Ring middleware included, attaches ring request map as metadata
+- Include snippet of code around stack trace lines
+- Mark in-project stack traces to hide frameworks
+- Pass along user IDs to Bugsnag
 
 ## Releases and Dependency Information
 
-clj-bugsnag is released via [Clojars](https://clojars.org/clj-bugsnag). The Latest stable release is 0.2.5
+A deployed copy of the most recent version of [clj-bugsnag can be found on clojars.](https://clojars.org/com.splashfinancial/clj-bugsnag)
+To use it, add the following as a dependency in your project.clj or deps.edn file:
 
-[Leiningen](https://github.com/technomancy/leiningen) dependency information:
+[![Clojars Project](https://clojars.org/com.splashfinancial/clj-bugsnag/latest-version.svg)](https://clojars.org/com.splashfinancial/clj-bugsnag)
 
-```clojure
-[clj-bugsnag "0.2.5"]
-```
-
-Maven dependency information:
-
-```xml
-<dependency>
-  <groupId>clj-bugsnag</groupId>
-  <artifactId>clj-bugsnag</artifactId>
-  <version>0.2.5</version>
-</dependency>
-```
-
+The next time you build your application, [Leiningen](https://leiningen.org/) or [tools.deps](https://clojure.org/guides/deps_and_cli) should pull it automatically.
+Alternatively, you may clone or fork the repository to work with it directly.
 
 ## Example Usage
 
@@ -79,9 +69,6 @@ Maven dependency information:
     (bugsnag/notify exception)))
 ```
 
-
 ## License
 
-Copyright © 2014-2015 6 Wunderkinder GmbH.
-
-Distributed under the [Eclipse Public License](http://www.eclipse.org/legal/epl-v10.html), the same as Clojure.
+Distributed under the [Eclipse Public License](http://www.eclipse.org/legal/epl-v10.html), the same as Clojure and the predecessor of this fork.
