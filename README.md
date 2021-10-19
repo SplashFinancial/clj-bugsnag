@@ -2,7 +2,7 @@
 
 [![Clojars Project](https://img.shields.io/clojars/v/com.splashfinancial/clj-bugsnag.svg)](https://clojars.org/com.splashfinancial/clj-bugsnag)
 [![cljdoc badge](https://cljdoc.org/badge/com.splashfinancial/clj-bugsnag)](https://cljdoc.org/d/com.splashfinancial/clj-bugsnag/CURRENT)
-![GitHub Runner](https://github.com/Wall-Brew-Co/clj-bugsnag/workflows/Clojure%20CI/badge.svg)
+[![Clojure Tests](https://github.com/SplashFinancial/clj-bugsnag/actions/workflows/clojure_tests.yml/badge.svg)](https://github.com/SplashFinancial/clj-bugsnag/actions/workflows/clojure_tests.yml)
 
 A fully fledged [Bugsnag](https://bugsnag.com) exception reporting client for Clojure.
 
@@ -21,7 +21,7 @@ Originally forked from [MicrosoftArchive](https://github.com/microsoftarchive/cl
 A deployed copy of the most recent version of [clj-bugsnag can be found on clojars.](https://clojars.org/com.splashfinancial/clj-bugsnag)
 To use it, add the following as a dependency in your project.clj or deps.edn file:
 
-[![Clojars Project](https://clojars.org/com.splashfinancial/clj-bugsnag/latest-version.svg)](https://clojars.org/com.splashfinancial/clj-bugsnag)
+[![Clojars Project](https://img.shields.io/clojars/v/com.splashfinancial/clj-bugsnag.svg)](https://clojars.org/com.splashfinancial/clj-bugsnag)
 
 The next time you build your application, [Leiningen](https://leiningen.org/) or [tools.deps](https://clojure.org/guides/deps_and_cli) should pull it automatically.
 Alternatively, you may clone or fork the repository to work with it directly.

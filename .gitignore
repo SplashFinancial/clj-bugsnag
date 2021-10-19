@@ -11,6 +11,8 @@
 /target
 
 ## Maven Artifacts
+pom.xml
+pom.xml.asc
 pom.xml.versionsBackup
 META-INF/
 
