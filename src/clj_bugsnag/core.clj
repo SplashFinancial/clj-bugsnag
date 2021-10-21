@@ -31,7 +31,7 @@
           source (repl/source-fn fn-sym)
           start (-> fn-var meta :line)
           indexed-lines (map-indexed (fn [i line]
-                                        [(+ i start) (string/trimr line)])
+                                       [(+ i start) (string/trimr line)])
                                      (string/split-lines source))]
       (into {} (filter #(<= (- around 3) (first %) (+ around 3)) indexed-lines)))
     (catch Exception _ex
@@ -45,11 +45,11 @@
                      method (method-str elem)
                      code (when (string/ends-with? (or file "") ".clj")
                             (find-source-snippet line (string/replace (or method "") "[fn]" "")))]]
-            {:file file
-             :lineNumber line
-             :method method
-             :inProject project?
-             :code code}))
+           {:file file
+            :lineNumber line
+            :method method
+            :inProject project?
+            :code code}))
     (catch Exception ex
       [{:file "clj-bugsnag/core.clj"
         :lineNumber 1
@@ -79,7 +79,7 @@
                             class-name))]
     {:apiKey   api-key
      :notifier {:name    "com.splashfinancial/clj-bugsnag"
-                :version "1.0.0"
+                :version "1.1.0"
                 :url     "https://github.com/SplashFinancial/clj-bugsnag"}
      :events   [{:payloadVersion "2"
                  :exceptions     [{:errorClass class-name
@@ -120,18 +120,18 @@
      - :environment - The deployment context in which the error occurred.
                       Defaults to `Production`
      - :meta - A map of arbitrary metadata to associate to the error
-     - :return-bugsnag-response? - A boolean toggle for this function's return value.
-                                   When truthy, return the clj-http response from calling BugSnag's API
-                                   When falsy, return nil- consistent with other logging interfaces and `println`
-                                   Defaults to falsy."
+     - :suppress-bugsnag-response? - A boolean toggle for this function's return value.
+                                     When truthy, return nil- consistent with other logging interfaces and `println`
+                                     When falsy, return the clj-http response from calling BugSnag's API
+                                     Defaults to falsy."
   ([exception]
    (notify exception nil))
 
-  ([exception {:keys [return-bugsnag-response?]
+  ([exception {:keys [suppress-bugsnag-response?]
                :as   options}]
    (let [params (exception->json exception options)
          url    "https://notify.bugsnag.com/"
          resp   (http/post url {:form-params  params :content-type :json})]
-     (if return-bugsnag-response?
-       resp
-       nil))))
+     (if suppress-bugsnag-response?
+       nil
+       resp))))

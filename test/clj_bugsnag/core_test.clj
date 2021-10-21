@@ -58,10 +58,10 @@
                          :body                  "OK"
                          :trace-redirects       ["https://notify.bugsnag.com/"]
                          :orig-content-encoding nil}
-        sample-client {:api-key "my-api-key" :return-bugsnag-response? true}]
+        sample-client {:api-key "my-api-key"}]
     (with-fake-routes-in-isolation
         {"https://notify.bugsnag.com/" (fn [_] sample-response)}
       (t/is (= sample-response (dissoc (core/notify test-excepiton sample-client) :request-time)))
       (bond/with-spy [clj-http.client/post]
-        (t/is (nil? (core/notify test-excepiton (dissoc sample-client :return-bugsnag-response?))))
+        (t/is (nil? (core/notify test-excepiton (assoc sample-client :suppress-bugsnag-response? true))))
         (t/is (= 1 (-> clj-http.client/post bond/calls count)))))))

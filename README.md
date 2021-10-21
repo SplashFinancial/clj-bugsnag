@@ -72,7 +72,7 @@ Alternatively, you may clone or fork the repository to work with it directly.
        :environment "dev"
        :version "v1.2.3"
        :severity "error"
-       :return-bugsnag-response? true
+       :suppress-bugsnag-response? true
        ;; Attach custom metadata to create tabs in Bugsnag:
        :meta {:input some-input}
        ;; Pass a user object to Bugsnag for better stats
@@ -82,8 +82,8 @@ Alternatively, you may clone or fork the repository to work with it directly.
     (bugsnag/notify exception)
 ```
 
-By default, `notify` will return nil and fire the side-effect of logging to Bugsnag.
-If you'd like access to the `clj-http` response from Bugsnag, you may set the `:return-bugsnag-response?` key in the option map to any truthy value.
+By default, `notify` will return the HTTP response from Bugsnag.
+If you'd like to simply receive nil, as is the case with most common logging interfaces, you may set the `:suppress-bugsnag-response?` key in the option map to any truthy value.
 
 Definitions of all option map keys are below:
 
@@ -109,9 +109,9 @@ Definitions of all option map keys are below:
 - `:environment` - The deployment context in which the error occurred.
   Defaults to `Production`
 - `:meta` - A map of arbitrary metadata to associate to the error
-- `:return-bugsnag-response?` - A boolean toggle for this function's return value.
-  When truthy, return the clj-http response from calling BugSnag's API
-  When falsy, return nil- consistent with other logging interfaces and `println`
+- `:suppress-bugsnag-response?` - A boolean toggle for this function's return value.
+  When falsy, return the clj-http response from calling BugSnag's API
+  When truthy, return nil- consistent with other logging interfaces and `println`
   Defaults to falsy.
 
 ## License
