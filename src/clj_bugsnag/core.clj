@@ -95,14 +95,43 @@
                  :metaData       (walk/postwalk stringify (merge base-meta meta))}]}))
 
 (defn notify
-  "Main interface for manually reporting exceptions.
-   When not :api-key is provided in options,
-   tries to load BUGSNAG_KEY var from enviroment."
+  "Post an `exception` to BugSnag.
+   A second, optional argument may be passed to congifugre the behavior of the client.
+   This map supports the following options.
+     - :api-key - The BugSnag API key for your project.
+                  If this key is missing, the library will attempt to load the Environment variable `BUGSNAG_KEY` and the JVM Property `bugsnagKey` in this order.
+                  If all three values are nil, an exception will be thrown
+     - :project-ns - The BugSnag project name you'd like to report the error to.
+                     Typically the artifact name.
+                     Defaults to \000
+     - :context - The BugSnag 'context' in which an error occured.
+                  Defaults to nil.
+                  See https://docs.bugsnag.com/platforms/java/other/customizing-error-reports/ for more details
+     - :group - The BugSnag 'group' an error occured within.
+                Defaults to the exception message for instances of `clojure.lang.ExceptionInfo` or the Class Name of the Exception
+     - :severity - The severity of the error.
+                   Must be one of `info`, `warning`, and `error`.
+                   Defaults to `error`
+     - :user  - A string representing the end user when the error occured.
+                Defaults to nil
+     - :version - The application version running when the error was reported.
+                  Defaults to the git SHA when possible.
+                  Otherwise nil.
+     - :environment - The deployment context in which the error occured.
+                      Defaults to `Production`
+     - :meta - A map of arbitrary metadata to associate to the error
+     - :return-bugsnag-reponse? - A boolean toggle for this function's return value.
+                                  When truthy, return the clj-http response from calling BugSnag's API
+                                  When falsy, return nil- consistent with other logging interfaces and `println`
+                                  Defaults to falsy."
   ([exception]
-    (notify exception nil))
+   (notify exception nil))
 
-  ([exception options]
-    (let [params (exception->json exception options)
-          url "https://notify.bugsnag.com/"]
-      (http/post url {:form-params params
-                      :content-type :json}))))
+  ([exception {:keys [return-bugsnag-reponse?]
+               :as   options}]
+   (let [params (exception->json exception options)
+         url    "https://notify.bugsnag.com/"
+         resp   (http/post url {:form-params  params :content-type :json})]
+     (if return-bugsnag-reponse?
+       resp
+       nil))))
