@@ -104,10 +104,10 @@
      - :project-ns - The BugSnag project name you'd like to report the error to.
                      Typically the artifact name.
                      Defaults to \000
-     - :context - The BugSnag 'context' in which an error occured.
+     - :context - The BugSnag 'context' in which an error occurred.
                   Defaults to nil.
                   See https://docs.bugsnag.com/platforms/java/other/customizing-error-reports/ for more details
-     - :group - The BugSnag 'group' an error occured within.
+     - :group - The BugSnag 'group' an error occurred within.
                 Defaults to the exception message for instances of `clojure.lang.ExceptionInfo` or the Class Name of the Exception
      - :severity - The severity of the error.
                    Must be one of `info`, `warning`, and `error`.
