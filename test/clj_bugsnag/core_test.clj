@@ -1,9 +1,10 @@
 (ns clj-bugsnag.core-test
   (:require [bond.james :as bond]
-            [clojure.string :as cs]
-            [clojure.test :as t]
+            [clj-http.fake :refer [with-fake-routes-in-isolation]]
             [clj-bugsnag.core :as core]
-            [clj-bugsnag.impl :as impl]))
+            [clj-bugsnag.impl :as impl]
+            [clojure.string :as cs]
+            [clojure.test :as t]))
 
 (defn make-crash
   "A function that will crash"
@@ -30,15 +31,37 @@
                     (catch Exception ex
                       (core/exception->json ex nil)))]
         (t/is (= (-> crash :events first :exceptions first :stacktrace second :code)
-                 {9  "  \"A function that will crash\""
-                  10 "  []"
-                  11 "  (let [closure (fn []"
-                  12 "                  (.crash nil))]"
-                  13 ""
-                  14 "  ;;"
-                  15 "  ;; /end to check for 3 lines before and after"}))
+                 {10  "  \"A function that will crash\""
+                  11 "  []"
+                  12 "  (let [closure (fn []"
+                  13 "                  (.crash nil))]"
+                  14 ""
+                  15 "  ;;"
+                  16 "  ;; /end to check for 3 lines before and after"}))
         (t/is (= (-> crash :events first :exceptions first :stacktrace (nth 2) :code)
-                 {14 "  ;;"
-                  15 "  ;; /end to check for 3 lines before and after"
-                  16 ""
-                  17 "    (closure)))"}))))))
+                 {15 "  ;;"
+                  16 "  ;; /end to check for 3 lines before and after"
+                  17 ""
+                  18 "    (closure)))"}))))))
+
+(t/deftest notify-test
+  (let [test-excepiton (Exception. "Oh no!")
+        sample-response {:status                200
+                         :headers               {"Access-Control-Allow-Origin" "*"
+                                                 "Bugsnag-Event-Id"            "some-event-id"
+                                                 "Date"                        "Thu, 21 Oct 2021 19:31:06 GMT"
+                                                 "Content-Length"              "2"
+                                                 "Content-Type"                "text/plain; charset=utf-8"
+                                                 "Via"                         "1.1 google"
+                                                 "Alt-Svc"                     "clear"
+                                                 "Connection"                  "close"}
+                         :body                  "OK"
+                         :trace-redirects       ["https://notify.bugsnag.com/"]
+                         :orig-content-encoding nil}
+        sample-client {:api-key "my-api-key" :return-bugsnag-response? true}]
+    (with-fake-routes-in-isolation
+        {"https://notify.bugsnag.com/" (fn [_] sample-response)}
+      (t/is (= sample-response (dissoc (core/notify test-excepiton sample-client) :request-time)))
+      (bond/with-spy [clj-http.client/post]
+        (t/is (nil? (core/notify test-excepiton (dissoc sample-client :return-bugsnag-response?))))
+        (t/is (= 1 (-> clj-http.client/post bond/calls count)))))))

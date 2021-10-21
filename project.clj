@@ -8,4 +8,5 @@
                  [clj-stacktrace "0.2.8"]
                  [clj-http "2.0.0"]
                  [cheshire "5.5.0"]]
-  :profiles {:dev {:dependencies [[circleci/bond "0.6.0"]]}})
+  :profiles {:dev {:dependencies [[circleci/bond "0.6.0"]
+                                  [clj-http-fake "1.0.3"]]}})

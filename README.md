@@ -28,11 +28,13 @@ Alternatively, you may clone or fork the repository to work with it directly.
 
 ## Example Usage
 
+### Ring Middleware
+
 ```clojure
 (require '[clj-bugsnag.core :as bugsnag]
          '[clj-bugsnag.ring :as bugsnag.ring])
 
-;; Ring middleware, all keys besides :api-key are optional:
+;; All keys besides :api-key are optional
 
 (bugsnag.ring/wrap-bugsnag
   handler
@@ -48,26 +50,69 @@ Alternatively, you may clone or fork the repository to work with it directly.
    ;; A optional function to extract a user object from a ring request map
    ;; Used to count how many users are affected by a crash
    :user-from-request (constantly {:id "shall return a map"})})
+```
 
+### Manual Reporting
+
+```clojure
+(require '[clj-bugsnag.core :as bugsnag])
 ;; Manual reporting using the notify function:
 
 (try
   (some-function-that-could-crash some-input)
   (catch Exception exception
 
-    ;; Notify with options map, all keys are optional:
+    ;; `notify` with options map in which all keys are optional:
+    ;; A full list of supported options
     (bugsnag/notify
       exception
       {:api-key "Project API key"
+       :project-ns "My service"
+       :context "some-http-handler"
+       :environment "dev"
+       :version "v1.2.3"
+       :severity "error"
+       :return-bugsnag-response? true
        ;; Attach custom metadata to create tabs in Bugsnag:
        :meta {:input some-input}
        ;; Pass a user object to Bugsnag for better stats
-       :user {:id ... :email ...}})
+       :user {:id ... :email ...}})))
 
-    ;; If no api-key is provided, clj-bugsnag
-    ;; will fall back to BUGSNAG_KEY environment variable
-    (bugsnag/notify exception)))
+    ;; If no api-key is provided, clj-bugsnag will fall back to BUGSNAG_KEY environment variable and bugsnagKey system property
+    (bugsnag/notify exception)
 ```
+
+By default, `notify` will return nil and fire the side-effect of logging to Bugsnag.
+If you'd like access to the `clj-http` response from Bugsnag, you may set the `:return-bugsnag-response?` key in the option map to any truthy value.
+
+Definitions of all option map keys are below:
+
+- `:api-key` - The BugSnag API key for your project.
+  If this key is missing, the library will attempt to load the Environment variable `BUGSNAG_KEY` and the JVM Property `bugsnagKey` in this order.
+  If all three values are nil, an exception will be thrown
+- `:project-ns` - The BugSnag project name you'd like to report the error to.
+  Typically the artifact name.
+  Defaults to \000
+- `:context` - The BugSnag 'context' in which an error occured.
+  Defaults to nil.
+  See [Bugsnag's documentation](https://docs.bugsnag.com/platforms/java/other/customizing-error-reports/) for more details
+- `:group` - The BugSnag 'group' an error occured within.
+  Defaults to the exception message for instances of `clojure.lang.ExceptionInfo` or the Class Name of the Exception
+- `:severity` - The severity of the error.
+  Must be one of `info`, `warning`, and `error`.
+  Defaults to `error`
+- `:user`  - A string or map of data representing the active end user when the error occurred.
+  Defaults to nil
+- `:version` - The application version running when the error was reported.
+  Defaults to the git SHA when possible.
+  Otherwise nil.
+- `:environment` - The deployment context in which the error occurred.
+  Defaults to `Production`
+- `:meta` - A map of arbitrary metadata to associate to the error
+- `:return-bugsnag-response?` - A boolean toggle for this function's return value.
+  When truthy, return the clj-http response from calling BugSnag's API
+  When falsy, return nil- consistent with other logging interfaces and `println`
+  Defaults to falsy.
 
 ## License
 

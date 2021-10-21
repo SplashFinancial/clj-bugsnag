@@ -112,26 +112,26 @@
      - :severity - The severity of the error.
                    Must be one of `info`, `warning`, and `error`.
                    Defaults to `error`
-     - :user  - A string representing the end user when the error occured.
+     - :user  - A string or map of facets representing the active end user when the error occurred.
                 Defaults to nil
      - :version - The application version running when the error was reported.
                   Defaults to the git SHA when possible.
                   Otherwise nil.
-     - :environment - The deployment context in which the error occured.
+     - :environment - The deployment context in which the error occurred.
                       Defaults to `Production`
      - :meta - A map of arbitrary metadata to associate to the error
-     - :return-bugsnag-reponse? - A boolean toggle for this function's return value.
-                                  When truthy, return the clj-http response from calling BugSnag's API
-                                  When falsy, return nil- consistent with other logging interfaces and `println`
-                                  Defaults to falsy."
+     - :return-bugsnag-response? - A boolean toggle for this function's return value.
+                                   When truthy, return the clj-http response from calling BugSnag's API
+                                   When falsy, return nil- consistent with other logging interfaces and `println`
+                                   Defaults to falsy."
   ([exception]
    (notify exception nil))
 
-  ([exception {:keys [return-bugsnag-reponse?]
+  ([exception {:keys [return-bugsnag-response?]
                :as   options}]
    (let [params (exception->json exception options)
          url    "https://notify.bugsnag.com/"
          resp   (http/post url {:form-params  params :content-type :json})]
-     (if return-bugsnag-reponse?
+     (if return-bugsnag-response?
        resp
        nil))))
