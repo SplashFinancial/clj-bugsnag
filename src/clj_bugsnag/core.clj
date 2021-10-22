@@ -96,7 +96,7 @@
 
 (defn notify
   "Post an `exception` to BugSnag.
-   A second, optional argument may be passed to congifugre the behavior of the client.
+   A second, optional argument may be passed to configure the behavior of the client.
    This map supports the following options.
      - :api-key - The BugSnag API key for your project.
                   If this key is missing, the library will attempt to load the Environment variable `BUGSNAG_KEY` and the JVM Property `bugsnagKey` in this order.
