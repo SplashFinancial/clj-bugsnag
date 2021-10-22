@@ -45,7 +45,7 @@
                   18 "    (closure)))"}))))))
 
 (t/deftest notify-test
-  (let [test-excepiton (Exception. "Oh no!")
+  (let [test-exception (Exception. "Oh no!")
         sample-response {:status                200
                          :headers               {"Access-Control-Allow-Origin" "*"
                                                  "Bugsnag-Event-Id"            "some-event-id"
