@@ -80,6 +80,10 @@ Alternatively, you may clone or fork the repository to work with it directly.
 
     ;; If no api-key is provided, clj-bugsnag will fall back to BUGSNAG_KEY environment variable and bugsnagKey system property
     (bugsnag/notify exception)
+
+    ;; Alternatively, if you do not want the HTTP response from Bugsnag
+    ;; This function may be supplied the same map of options as well, but ignores `:suppress-bugsnag-response?`
+    (bugsnag/notify-v2! exception)
 ```
 
 By default, `notify` will return the HTTP response from Bugsnag.

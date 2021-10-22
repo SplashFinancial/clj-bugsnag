@@ -45,7 +45,7 @@
                   18 "    (closure)))"}))))))
 
 (t/deftest notify-test
-  (let [test-exception (Exception. "Oh no!")
+  (let [test-exception  (Exception. "Oh no!")
         sample-response {:status                200
                          :headers               {"Access-Control-Allow-Origin" "*"
                                                  "Bugsnag-Event-Id"            "some-event-id"
@@ -58,10 +58,36 @@
                          :body                  "OK"
                          :trace-redirects       ["https://notify.bugsnag.com/"]
                          :orig-content-encoding nil}
-        sample-client {:api-key "my-api-key"}]
-    (with-fake-routes-in-isolation
+        sample-client   {:api-key "my-api-key"}]
+    (t/testing "Test to ensure we call the Bugsnag API, and, by default return the HTTP response from Bugsnag (Which is overridable)"
+      (with-fake-routes-in-isolation
         {"https://notify.bugsnag.com/" (fn [_] sample-response)}
-      (t/is (= sample-response (dissoc (core/notify test-exception sample-client) :request-time)))
-      (bond/with-spy [clj-http.client/post]
-        (t/is (nil? (core/notify test-exception (assoc sample-client :suppress-bugsnag-response? true))))
-        (t/is (= 1 (-> clj-http.client/post bond/calls count)))))))
+        (t/is (= sample-response (dissoc (core/notify test-exception sample-client) :request-time)))
+        (bond/with-spy [clj-http.client/post]
+          (t/is (nil? (core/notify test-exception (assoc sample-client :suppress-bugsnag-response? true))))
+          (t/is (= 1 (-> clj-http.client/post bond/calls count))))))))
+
+(t/deftest notify-v2!-test
+  (let [test-exception  (Exception. "Oh no!")
+        sample-response {:status                200
+                         :headers               {"Access-Control-Allow-Origin" "*"
+                                                 "Bugsnag-Event-Id"            "some-event-id"
+                                                 "Date"                        "Thu, 21 Oct 2021 19:31:06 GMT"
+                                                 "Content-Length"              "2"
+                                                 "Content-Type"                "text/plain; charset=utf-8"
+                                                 "Via"                         "1.1 google"
+                                                 "Alt-Svc"                     "clear"
+                                                 "Connection"                  "close"}
+                         :body                  "OK"
+                         :trace-redirects       ["https://notify.bugsnag.com/"]
+                         :orig-content-encoding nil}
+        sample-client   {:api-key "my-api-key"}]
+    (t/testing "Test to ensure we call the Bugsnag API, and return nil (Which is not overridable)"
+      (with-fake-routes-in-isolation
+        {"https://notify.bugsnag.com/" (fn [_] sample-response)}
+        (bond/with-spy [clj-http.client/post]
+          (t/is (nil? (core/notify-v2! test-exception (assoc sample-client :suppress-bugsnag-response? false))))
+          (t/is (= 1 (-> clj-http.client/post bond/calls count))))
+        (bond/with-spy [clj-http.client/post]
+          (t/is (nil? (core/notify-v2! test-exception sample-client)))
+          (t/is (= 1 (-> clj-http.client/post bond/calls count))))))))
