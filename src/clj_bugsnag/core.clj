@@ -31,7 +31,7 @@
           source (repl/source-fn fn-sym)
           start (-> fn-var meta :line)
           indexed-lines (map-indexed (fn [i line]
-                                        [(+ i start) (string/trimr line)])
+                                       [(+ i start) (string/trimr line)])
                                      (string/split-lines source))]
       (into {} (filter #(<= (- around 3) (first %) (+ around 3)) indexed-lines)))
     (catch Exception _ex
@@ -45,11 +45,11 @@
                      method (method-str elem)
                      code (when (string/ends-with? (or file "") ".clj")
                             (find-source-snippet line (string/replace (or method "") "[fn]" "")))]]
-            {:file file
-             :lineNumber line
-             :method method
-             :inProject project?
-             :code code}))
+           {:file file
+            :lineNumber line
+            :method method
+            :inProject project?
+            :code code}))
     (catch Exception ex
       [{:file "clj-bugsnag/core.clj"
         :lineNumber 1
@@ -79,7 +79,7 @@
                             class-name))]
     {:apiKey   api-key
      :notifier {:name    "com.splashfinancial/clj-bugsnag"
-                :version "1.0.0"
+                :version "1.1.0"
                 :url     "https://github.com/SplashFinancial/clj-bugsnag"}
      :events   [{:payloadVersion "2"
                  :exceptions     [{:errorClass class-name
@@ -95,14 +95,81 @@
                  :metaData       (walk/postwalk stringify (merge base-meta meta))}]}))
 
 (defn notify
-  "Main interface for manually reporting exceptions.
-   When not :api-key is provided in options,
-   tries to load BUGSNAG_KEY var from enviroment."
+  "Notify Bugsnag about the supplied `exception`.
+   By default, this function returns the HTTP response from Bugsnag.
+   A second, optional argument may be passed to configure the behavior of the client.
+   This map supports the following options.
+     - :api-key - The BugSnag API key for your project.
+                  If this key is missing, the library will attempt to load the Environment variable `BUGSNAG_KEY` and the JVM Property `bugsnagKey` in this order.
+                  If all three values are nil, an exception will be thrown
+     - :project-ns - The BugSnag project name you'd like to report the error to.
+                     Typically the artifact name.
+                     Defaults to \000
+     - :context - The BugSnag 'context' in which an error occurred.
+                  Defaults to nil.
+                  See https://docs.bugsnag.com/platforms/java/other/customizing-error-reports/ for more details
+     - :group - The BugSnag 'group' an error occurred within.
+                Defaults to the exception message for instances of `clojure.lang.ExceptionInfo` or the Class Name of the Exception
+     - :severity - The severity of the error.
+                   Must be one of `info`, `warning`, and `error`.
+                   Defaults to `error`
+     - :user  - A string or map of facets representing the active end user when the error occurred.
+                Defaults to nil
+     - :version - The application version running when the error was reported.
+                  Defaults to the git SHA when possible.
+                  Otherwise nil.
+     - :environment - The deployment context in which the error occurred.
+                      Defaults to `Production`
+     - :meta - A map of arbitrary metadata to associate to the error
+     - :suppress-bugsnag-response? - A boolean toggle for this function's return value.
+                                     When truthy, return nil- consistent with other logging interfaces and `println`
+                                     When falsy, return the clj-http response from calling BugSnag's API
+                                     Defaults to falsy."
   ([exception]
-    (notify exception nil))
+   (notify exception nil))
+
+  ([exception {:keys [suppress-bugsnag-response?]
+               :as   options}]
+   (let [params (exception->json exception options)
+         url    "https://notify.bugsnag.com/"
+         resp   (http/post url {:form-params  params :content-type :json})]
+     (if suppress-bugsnag-response?
+       nil
+       resp))))
+
+(defn notify-v2!
+  "Notify BugSnag about the supplied `exception`.
+   By default, this function returns nil.
+   A second, optional argument may be passed to configure the behavior of the client, which deviates in behavior from `notify`
+   This map supports the following options.
+     - :api-key - The BugSnag API key for your project.
+                  If this key is missing, the library will attempt to load the Environment variable `BUGSNAG_KEY` and the JVM Property `bugsnagKey` in this order.
+                  If all three values are nil, an exception will be thrown
+     - :project-ns - The BugSnag project name you'd like to report the error to.
+                     Typically the artifact name.
+                     Defaults to \000
+     - :context - The BugSnag 'context' in which an error occurred.
+                  Defaults to nil.
+                  See https://docs.bugsnag.com/platforms/java/other/customizing-error-reports/ for more details
+     - :group - The BugSnag 'group' an error occurred within.
+                Defaults to the exception message for instances of `clojure.lang.ExceptionInfo` or the Class Name of the Exception
+     - :severity - The severity of the error.
+                   Must be one of `info`, `warning`, and `error`.
+                   Defaults to `error`
+     - :user  - A string or map of facets representing the active end user when the error occurred.
+                Defaults to nil
+     - :version - The application version running when the error was reported.
+                  Defaults to the git SHA when possible.
+                  Otherwise nil.
+     - :environment - The deployment context in which the error occurred.
+                      Defaults to `Production`
+     - :meta - A map of arbitrary metadata to associate to the error"
+  ([exception]
+   (notify-v2! exception nil))
 
   ([exception options]
-    (let [params (exception->json exception options)
-          url "https://notify.bugsnag.com/"]
-      (http/post url {:form-params params
-                      :content-type :json}))))
+   (let [params (exception->json exception options)
+         url    "https://notify.bugsnag.com/"
+         _      (http/post url {:form-params  params
+                                :content-type :json})]
+     nil)))
